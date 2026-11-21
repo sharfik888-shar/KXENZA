@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>KXENZA</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -10,188 +10,158 @@
     :root {
       --bg: #0a0a0a; --card: #141414; --border: #2a2a2a;
       --red: #e11d2e; --red-hover: #ff2b3d; --red-glow: rgba(225, 29, 46, 0.4);
-      --text: #ffffff; --muted: #8a8a8a; --error: #ff4d5e;
+      --text: #ffffff; --muted: #8a8a8a; --error: #ff4d5e; --msg-out: #b0101f; --msg-in: #1f1f1f;
     }
     body {
-      min-height: 100vh; background: var(--bg);
-      background-image: radial-gradient(circle at 20% 0%, rgba(225, 29, 46, 0.15), transparent 50%), radial-gradient(circle at 80% 100%, rgba(225, 29, 46, 0.1), transparent 50%);
-      color: var(--text); display: flex; align-items: center; justify-content: center; padding: 20px;
+      height: 100vh; background: var(--bg); color: var(--text);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .auth-card {
+    
+    /* --- ЭКРАН АВТОРИЗАЦИИ --- */
+    #authScreen {
       width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border);
-      border-radius: 24px; padding: 40px 32px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); animation: fadeIn 0.5s ease;
+      border-radius: 24px; padding: 40px 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      animation: fadeIn 0.5s ease; margin: 20px;
     }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .logo { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
-    .logo-mark { width: 48px; height: 48px; flex-shrink: 0; }
-    .logo-text {
-      font-size: 32px; font-weight: 800; letter-spacing: 2px;
-      background: linear-gradient(135deg, #ffffff 0%, var(--red) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .subtitle { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 32px; }
-    .tabs { display: flex; background: #0f0f0f; border-radius: 12px; padding: 4px; margin-bottom: 28px; border: 1px solid var(--border); }
-    .tab {
-      flex: 1; padding: 10px; background: transparent; border: none; color: var(--muted);
-      font-size: 14px; font-weight: 600; border-radius: 9px; cursor: pointer; transition: all 0.25s ease;
-    }
+    .logo-text { font-size: 32px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, #fff 0%, var(--red) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .tabs { display: flex; background: #0f0f0f; border-radius: 12px; padding: 4px; margin: 24px 0; border: 1px solid var(--border); }
+    .tab { flex: 1; padding: 10px; background: transparent; border: none; color: var(--muted); font-size: 14px; font-weight: 600; border-radius: 9px; cursor: pointer; }
     .tab.active { background: var(--red); color: white; box-shadow: 0 0 20px var(--red-glow); }
     .field { margin-bottom: 16px; }
-    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
-    .field label .optional { color: #555; font-weight: 400; }
-    .field input {
-      width: 100%; padding: 14px 16px; background: #0f0f0f; border: 1px solid var(--border);
-      border-radius: 12px; color: var(--text); font-size: 15px; outline: none; transition: all 0.25s ease;
-    }
-    .field input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(225, 29, 46, 0.15); }
-    .field input::placeholder { color: #444; }
-    .hint { font-size: 12px; margin-top: 6px; color: var(--muted); min-height: 16px; }
-    .hint.error { color: var(--error); }
-    .btn-primary {
-      width: 100%; padding: 15px; margin-top: 8px;
-      background: linear-gradient(135deg, var(--red) 0%, #b0101f 100%);
-      border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700;
-      cursor: pointer; transition: all 0.25s ease; box-shadow: 0 0 20px var(--red-glow);
-    }
-    .btn-primary:hover:not(:disabled) { background: linear-gradient(135deg, var(--red-hover) 0%, var(--red) 100%); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-secondary {
-      width: 100%; padding: 12px; margin-top: 10px; background: transparent;
-      border: 1px solid var(--border); border-radius: 12px; color: var(--text);
-      font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s ease;
-    }
-    .btn-secondary:hover { border-color: var(--red); color: var(--red); }
-    .message { padding: 12px 16px; border-radius: 10px; font-size: 14px; margin-bottom: 16px; display: none; }
+    .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .field input { width: 100%; padding: 14px 16px; background: #0f0f0f; border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; outline: none; }
+    .field input:focus { border-color: var(--red); }
+    .btn { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--red) 0%, #b0101f 100%); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 0 20px var(--red-glow); }
+    .message { padding: 12px; border-radius: 10px; font-size: 14px; margin-bottom: 16px; display: none; }
     .message.show { display: block; }
     .message.error { background: rgba(255, 77, 94, 0.1); border: 1px solid rgba(255, 77, 94, 0.3); color: var(--error); }
     .message.success { background: rgba(61, 220, 132, 0.1); border: 1px solid rgba(61, 220, 132, 0.3); color: #3ddc84; }
-    .form { display: none; }
-    .form.active { display: block; animation: fadeIn 0.3s ease; }
-    .footer-note { text-align: center; font-size: 12px; color: #555; margin-top: 24px; }
-    .welcome { text-align: center; display: none; }
-    .welcome.show { display: block; animation: fadeIn 0.5s ease; }
-    
-    /* Аватар и галочки */
-    .avatar-container { position: relative; display: inline-block; margin: 0 auto 20px; }
-    .welcome .avatar {
-      width: 88px; height: 88px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--red), #6b0b13);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 36px; font-weight: 800; border: 3px solid var(--red); box-shadow: 0 0 30px var(--red-glow);
-    }
-    .badge {
-      position: absolute; bottom: 0; right: 0;
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      border: 3px solid var(--card); font-size: 14px;
-    }
-    .badge.owner { background: var(--red); color: white; box-shadow: 0 0 15px var(--red); }
-    .badge.admin { background: #3b82f6; color: white; box-shadow: 0 0 15px #3b82f6; }
-    .badge.verified { background: #10b981; color: white; box-shadow: 0 0 15px #10b981; }
+    .form { display: none; } .form.active { display: block; }
 
-    .welcome h2 { font-size: 24px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .inline-badge { font-size: 16px; }
-    .welcome p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-    .btn-logout { padding: 12px 24px; background: transparent; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 14px; cursor: pointer; transition: all 0.25s ease; }
+    /* --- ЭКРАН МЕССЕНДЖЕРА --- */
+    #chatScreen {
+      display: none; width: 100%; height: 100%; background: var(--bg); overflow: hidden;
+    }
+    #chatScreen.show { display: flex; }
+    
+    .sidebar {
+      width: 320px; border-right: 1px solid var(--border); display: flex; flex-direction: column; background: var(--card);
+      transition: transform 0.3s ease;
+    }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-header h2 { font-size: 20px; display: flex; align-items: center; gap: 8px; }
+    .btn-logout { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
     .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-    /* Панель администратора */
-    .admin-panel {
-      display: none; margin-top: 24px; padding: 20px;
-      background: #0f0f0f; border: 1px solid var(--border); border-radius: 16px;
-      text-align: left;
-    }
-    .admin-panel.show { display: block; animation: fadeIn 0.3s ease; }
-    .admin-panel h3 { font-size: 15px; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-    .admin-panel input { margin-bottom: 8px; }
+    .search-box { padding: 16px; border-bottom: 1px solid var(--border); }
+    .search-box input { width: 100%; padding: 10px 14px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; }
+    .search-box input:focus { border-color: var(--red); }
+    
+    .chat-list { flex: 1; overflow-y: auto; }
+    .chat-item { padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 12px; }
+    .chat-item:hover { background: #1a1a1a; }
+    .chat-item.active { background: #2a0b0f; border-left: 3px solid var(--red); }
+    .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--red); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .chat-info { flex: 1; overflow: hidden; }
+    .chat-name { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+    .chat-last-msg { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Окно чата */
+    .main-chat {
+      flex: 1; display: flex; flex-direction: column; background: #0a0a0a;
+      background-image: radial-gradient(circle at 50% 50%, rgba(225, 29, 46, 0.03), transparent 60%);
+    }
+    .chat-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--card); }
+    .chat-header .chat-name { font-size: 18px; }
+    
+    .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .msg-bubble {
+      max-width: 70%; padding: 10px 14px; border-radius: 14px; font-size: 15px; line-height: 1.4;
+      word-break: break-word; position: relative;
+    }
+    .msg-out { align-self: flex-end; background: var(--msg-out); color: white; border-bottom-right-radius: 4px; }
+    .msg-in { align-self: flex-start; background: var(--msg-in); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+    .msg-time { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; margin-top: 4px; display: block; }
+    
+    .message-input-area { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: var(--card); }
+    .message-input-area input { flex: 1; padding: 14px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; color: white; outline: none; }
+    .message-input-area input:focus { border-color: var(--red); }
+    .btn-send { padding: 0 20px; background: var(--red); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .btn-send:hover { background: var(--red-hover); box-shadow: 0 0 15px var(--red-glow); }
+
+    .empty-chat { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 15px; }
+
+    /* Мобильная версия */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; position: absolute; z-index: 10; height: 100%; }
+      .sidebar.hidden { transform: translateX(-100%); }
+      .main-chat { width: 100%; position: absolute; z-index: 5; }
+      .back-btn { display: block !important; }
+    }
+    .back-btn { display: none; background: transparent; border: none; color: white; font-size: 20px; margin-right: 10px; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="auth-card">
-    <div class="logo">
-      <svg class="logo-mark" viewBox="0 0 48 48" fill="none">
-        <defs><linearGradient id="kxGrad" x1="0" y1="0" x2="48" y2="48"><stop offset="0%" stop-color="#e11d2e"/><stop offset="100%" stop-color="#6b0b13"/></linearGradient></defs>
-        <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#kxGrad)"/>
-        <path d="M16 14 L24 24 L16 34" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <path d="M32 14 L24 24 L32 34" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6"/>
-      </svg>
-      <span class="logo-text">KXENZA</span>
+  <!-- ЭКРАН ВХОДА -->
+  <div id="authScreen">
+    <div class="logo"><span class="logo-text">KXENZA</span></div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Вход</button>
+      <button class="tab" onclick="switchTab('register')">Регистрация</button>
     </div>
-    <p class="subtitle">Мессенджер нового поколения</p>
+    <div id="authMessage" class="message"></div>
 
-    <div id="authScreen">
-      <div class="tabs">
-        <button class="tab active" id="tabLogin" onclick="switchTab('login')">Вход</button>
-        <button class="tab" id="tabRegister" onclick="switchTab('register')">Регистрация</button>
+    <form class="form active" id="loginForm">
+      <div class="field"><label>Юзернейм</label><input type="text" id="loginUsername" placeholder="KXENZA" /></div>
+      <div class="field"><label>Пароль</label><input type="password" id="loginPassword" placeholder="••••••••" /></div>
+      <button type="submit" class="btn" id="loginBtn">Войти</button>
+    </form>
+
+    <form class="form" id="registerForm">
+      <div class="field"><label>Юзернейм</label><input type="text" id="regUsername" placeholder="минимум 6 символов" /></div>
+      <div class="field"><label>Пароль</label><input type="password" id="regPassword" placeholder="минимум 6 символов" /></div>
+      <div class="field"><label>Email (необязательно)</label><input type="email" id="regEmail" /></div>
+      <button type="submit" class="btn" id="registerBtn">Создать аккаунт</button>
+    </form>
+  </div>
+
+  <!-- ЭКРАН ЧАТОВ -->
+  <div id="chatScreen">
+    <!-- Сайдбар -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>KXENZA <span id="myUsernameDisplay" style="font-size: 14px; color: var(--muted);"></span></h2>
+        <button class="btn-logout" onclick="logout()">Выйти</button>
       </div>
-      <div id="messageBox" class="message"></div>
-
-      <form class="form active" id="loginForm">
-        <div class="field">
-          <label>Юзернейм</label>
-          <input type="text" id="loginUsername" placeholder="ваш_юзернейм" autocomplete="username" />
-        </div>
-        <div class="field">
-          <label>Пароль</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" />
-        </div>
-        <button type="submit" class="btn-primary" id="loginBtn">Войти</button>
-      </form>
-
-      <form class="form" id="registerForm">
-        <div class="field">
-          <label>Юзернейм</label>
-          <input type="text" id="regUsername" placeholder="минимум 6 символов" autocomplete="username" />
-          <div class="hint" id="usernameHint">Только буквы, цифры и _ , от 6 до 20 символов</div>
-        </div>
-        <div class="field">
-          <label>Пароль</label>
-          <input type="password" id="regPassword" placeholder="минимум 6 символов" autocomplete="new-password" />
-        </div>
-        <div class="field">
-          <label>Email <span class="optional">(необязательно)</span></label>
-          <input type="email" id="regEmail" placeholder="you@example.com" />
-        </div>
-        <div class="field">
-          <label>Номер телефона <span class="optional">(необязательно)</span></label>
-          <input type="tel" id="regPhone" placeholder="+7 700 000 00 00" />
-        </div>
-        <button type="submit" class="btn-primary" id="registerBtn">Создать аккаунт</button>
-      </form>
+      <div class="search-box">
+        <input type="text" id="searchUser" placeholder="Поиск по юзернейму..." oninput="searchUsers(this.value)" />
+        <div id="searchResults" style="position: absolute; background: var(--card); width: calc(100% - 32px); border: 1px solid var(--border); border-radius: 8px; margin-top: 5px; display: none; z-index: 20;"></div>
+      </div>
+      <div class="chat-list" id="chatList"></div>
     </div>
 
-    <!-- ЭКРАН ПОСЛЕ ВХОДА -->
-    <div class="welcome" id="welcomeScreen">
-      <div class="avatar-container">
-        <div class="avatar" id="welcomeAvatar">K</div>
-        <div class="badge" id="welcomeBadge" style="display:none;"></div>
-      </div>
-      <h2>
-        <span id="welcomeName"></span>
-        <span id="inlineBadge" style="display:none;" class="inline-badge"></span>
-      </h2>
-      <p id="welcomeRoleText">Пользователь</p>
+    <!-- Окно чата -->
+    <div class="main-chat" id="mainChat">
+      <div class="empty-chat" id="emptyState">Выберите чат или найдите пользователя</div>
       
-      <button class="btn-logout" onclick="logout()">Выйти</button>
-
-      <!-- ПАНЕЛЬ ВЛАДЕЛЬЦА -->
-      <div class="admin-panel" id="adminPanel">
-        <h3>👑 Панель владельца</h3>
-        <div class="field">
-          <input type="text" id="adminTargetUser" placeholder="Юзернейм пользователя" />
+      <div id="activeChatArea" style="display: none; flex-direction: column; height: 100%;">
+        <div class="chat-header">
+          <button class="back-btn" onclick="toggleMobileSidebar()">←</button>
+          <div class="chat-avatar" id="headerAvatar">U</div>
+          <div class="chat-name" id="headerName">Пользователь</div>
         </div>
-        <button class="btn-primary" id="btnMakeAdmin" style="margin-top: 0;">Выдать админку</button>
-        <button class="btn-secondary" id="btnRemoveAdmin">Забрать админку</button>
-        <button class="btn-secondary" id="btnVerifyUser">Выдать галочку (без админки)</button>
-        <div id="adminMsg" class="message" style="margin-top: 12px; margin-bottom: 0;"></div>
+        
+        <div class="messages-area" id="messagesArea"></div>
+        
+        <div class="message-input-area">
+          <input type="text" id="messageInput" placeholder="Написать сообщение..." onkeypress="if(event.key === 'Enter') sendMessage()" />
+          <button class="btn-send" onclick="sendMessage()">➤</button>
+        </div>
       </div>
     </div>
-
-    <p class="footer-note">Используя KXENZA, вы соглашаетесь с <a href="#" style="color:var(--red); text-decoration:none;">условиями</a></p>
   </div>
 
   <script>
@@ -200,197 +170,253 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // UI УТИЛИТЫ
+    let currentUser = null;
+    let activeChatId = null;
+    let messageSubscription = null;
+
+    // --- УТИЛИТЫ АВТОРИЗАЦИИ ---
     function switchTab(tab) {
-      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
-      document.getElementById('registerForm').classList.toggle('active', tab === 'register');
-      hideMessage();
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+      if(tab === 'login') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('loginForm').classList.add('active');
+      } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('registerForm').classList.add('active');
+      }
+      hideAuthMessage();
     }
-    function showMessage(text, type = 'error') {
-      const box = document.getElementById('messageBox');
+    function showAuthMessage(text, type = 'error') {
+      const box = document.getElementById('authMessage');
       box.textContent = text; box.className = 'message show ' + type;
     }
-    function hideMessage() { document.getElementById('messageBox').className = 'message'; }
-    function setLoading(btn, loading, text) {
-      if (loading) {
-        btn.dataset.originalText = btn.textContent;
-        btn.innerHTML = '<span class="spinner"></span>' + (text || 'Загрузка...');
-        btn.disabled = true;
-      } else {
-        btn.textContent = btn.dataset.originalText || text;
-        btn.disabled = false;
-      }
-    }
+    function hideAuthMessage() { document.getElementById('authMessage').className = 'message'; }
 
-    // ВАЛИДАЦИЯ
-    const USERNAME_REGEX = /^[a-zA-Z0-9_]{6,20}$/;
-    function validateUsername(username) {
-      if (!username) return 'Введите юзернейм';
-      if (username.length < 6) return 'Минимум 6 символов';
-      if (username.length > 20) return 'Максимум 20 символов';
-      if (!USERNAME_REGEX.test(username)) return 'Только буквы, цифры и _';
-      return null;
-    }
-    function validatePassword(password) {
-      if (!password) return 'Введите пароль';
-      if (password.length < 6) return 'Минимум 6 символов';
-      return null;
-    }
-
-    const regUsernameInput = document.getElementById('regUsername');
-    const usernameHint = document.getElementById('usernameHint');
-    regUsernameInput.addEventListener('input', () => {
-      const val = regUsernameInput.value.trim();
-      const err = val ? validateUsername(val) : null;
-      if (val && err) {
-        usernameHint.textContent = err; usernameHint.className = 'hint error';
-      } else {
-        usernameHint.textContent = 'Только буквы, цифры и _ , от 6 до 20 символов';
-        usernameHint.className = 'hint';
-      }
-    });
-
-    // РЕГИСТРАЦИЯ
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      hideMessage();
-      const username = regUsernameInput.value.trim();
-      const password = document.getElementById('regPassword').value;
-      const email = document.getElementById('regEmail').value.trim();
-      const phone = document.getElementById('regPhone').value.trim();
-      const btn = document.getElementById('registerBtn');
-
-      const usernameErr = validateUsername(username);
-      if (usernameErr) return showMessage(usernameErr);
-      const passwordErr = validatePassword(password);
-      if (passwordErr) return showMessage(passwordErr);
-
-      setLoading(btn, true, 'Проверка...');
-      const { data: existing } = await db.from('profiles').select('username').eq('username', username).maybeSingle();
-      if (existing) { setLoading(btn, false); return showMessage('Этот юзернейм уже занят'); }
-
-      setLoading(btn, true, 'Создание...');
-      const authEmail = email || `${username}@kxenza.local`;
-      const { data: authData, error: authError } = await db.auth.signUp({ email: authEmail, password: password });
-
-      if (authError) {
-        setLoading(btn, false);
-        if (authError.message.includes('already')) return showMessage('Этот email уже используется');
-        return showMessage(authError.message);
-      }
-
-      if (authData.user) {
-        const { error: profileError } = await db.from('profiles').insert({
-          id: authData.user.id, username: username, email: email || null, phone: phone || null,
-        });
-        if (profileError) { setLoading(btn, false); return showMessage('Ошибка профиля: ' + profileError.message); }
-      }
-
-      setLoading(btn, false);
-      showMessage('Аккаунт создан! Входим...', 'success');
-      setTimeout(() => loadProfileAndShow(authData.user.id), 800);
-    });
-
-    // ВХОД
+    // --- ВХОД И РЕГИСТРАЦИЯ ---
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      hideMessage();
       const username = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPassword').value;
-      const btn = document.getElementById('loginBtn');
-
-      if (!username || !password) return showMessage('Заполните все поля');
-      setLoading(btn, true, 'Вход...');
-
       const { data: profile } = await db.from('profiles').select('email').eq('username', username).maybeSingle();
-      if (!profile) { setLoading(btn, false); return showMessage('Пользователь не найден'); }
-
-      const loginEmail = profile.email || `${username}@kxenza.local`;
-      const { data: authData, error } = await db.auth.signInWithPassword({ email: loginEmail, password: password });
-      setLoading(btn, false);
-
-      if (error) return showMessage('Неверный пароль');
-      loadProfileAndShow(authData.user.id);
+      if (!profile) return showAuthMessage('Пользователь не найден');
+      
+      const email = profile.email || `${username}@kxenza.local`;
+      const { data, error } = await db.auth.signInWithPassword({ email, password });
+      if (error) return showAuthMessage('Неверный пароль');
+      initMessenger();
     });
 
-    // ЗАГРУЗКА ПРОФИЛЯ И ПОКАЗ ЭКРАНА
-    async function loadProfileAndShow(userId) {
-      const { data: profile } = await db.from('profiles').select('*').eq('id', userId).single();
-      if (!profile) return;
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const emailInput = document.getElementById('regEmail').value.trim();
+      const email = emailInput || `${username}@kxenza.local`;
 
-      document.getElementById('authScreen').style.display = 'none';
-      document.getElementById('welcomeScreen').classList.add('show');
-      document.getElementById('welcomeName').textContent = profile.username;
-      document.getElementById('welcomeAvatar').textContent = profile.username[0].toUpperCase();
+      const { data: existing } = await db.from('profiles').select('id').eq('username', username).maybeSingle();
+      if (existing) return showAuthMessage('Юзернейм занят');
 
-      // Настройка галочек и ролей
-      const badge = document.getElementById('welcomeBadge');
-      const inlineBadge = document.getElementById('inlineBadge');
-      const roleText = document.getElementById('welcomeRoleText');
-      const adminPanel = document.getElementById('adminPanel');
-
-      badge.style.display = 'none';
-      inlineBadge.style.display = 'none';
-      adminPanel.classList.remove('show');
-
-      if (profile.role === 'owner') {
-        badge.className = 'badge owner'; badge.innerHTML = '👑'; badge.style.display = 'flex';
-        inlineBadge.textContent = '👑'; inlineBadge.style.display = 'inline';
-        roleText.textContent = 'Официальный владелец KXENZA';
-        adminPanel.classList.add('show'); // Показываем панель
-      } else if (profile.role === 'admin') {
-        badge.className = 'badge admin'; badge.innerHTML = '🛡️'; badge.style.display = 'flex';
-        inlineBadge.textContent = '🛡️'; inlineBadge.style.display = 'inline';
-        roleText.textContent = 'Администратор';
-      } else if (profile.is_verified) {
-        badge.className = 'badge verified'; badge.innerHTML = '✓'; badge.style.display = 'flex';
-        inlineBadge.textContent = '✓'; inlineBadge.style.display = 'inline';
-        roleText.textContent = 'Верифицированный пользователь';
-      } else {
-        roleText.textContent = 'Пользователь';
+      const { data: authData, error } = await db.auth.signUp({ email, password });
+      if (error) return showAuthMessage(error.message);
+      
+      if (authData.user) {
+        await db.from('profiles').insert({ id: authData.user.id, username, email: emailInput || null });
+        initMessenger();
       }
+    });
+
+    // --- ЛОГИКА МЕССЕНДЖЕРА ---
+    async function initMessenger() {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return;
+      
+      const { data: profile } = await db.from('profiles').select('*').eq('id', session.user.id).single();
+      currentUser = profile;
+      
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('chatScreen').classList.add('show');
+      document.getElementById('myUsernameDisplay').textContent = '@' + currentUser.username;
+      
+      loadChats();
+      setupRealtime();
     }
 
-    // ВЫХОД
     async function logout() {
       await db.auth.signOut();
-      document.getElementById('welcomeScreen').classList.remove('show');
-      document.getElementById('authScreen').style.display = 'block';
-      document.getElementById('loginForm').reset();
-      document.getElementById('registerForm').reset();
-      hideMessage();
+      location.reload();
     }
 
-    // ПАНЕЛЬ ВЛАДЕЛЬЦА (RPC ВЫЗОВЫ)
-    async function adminAction(rpcName, successMsg) {
-      const targetUser = document.getElementById('adminTargetUser').value.trim();
-      const msgBox = document.getElementById('adminMsg');
-      if (!targetUser) {
-        msgBox.textContent = 'Введите юзернейм'; msgBox.className = 'message show error'; return;
-      }
-      msgBox.textContent = 'Выполняется...'; msgBox.className = 'message show';
+    // --- ПОИСК ПОЛЬЗОВАТЕЛЕЙ ---
+    async function searchUsers(query) {
+      const resBox = document.getElementById('searchResults');
+      if (query.length < 2) { resBox.style.display = 'none'; return; }
       
-      const { error } = await db.rpc(rpcName, { target_username: targetUser });
+      const { data: users } = await db.from('profiles').select('id, username').ilike('username', `%${query}%`).neq('id', currentUser.id).limit(5);
       
-      if (error) {
-        msgBox.textContent = error.message; msgBox.className = 'message show error';
+      if (users && users.length > 0) {
+        resBox.innerHTML = users.map(u => `
+          <div style="padding: 12px; cursor: pointer; border-bottom: 1px solid var(--border);" onclick="startChat('${u.id}', '${u.username}')">
+            <b>${u.username}</b>
+          </div>
+        `).join('');
+        resBox.style.display = 'block';
       } else {
-        msgBox.textContent = successMsg; msgBox.className = 'message show success';
-        document.getElementById('adminTargetUser').value = '';
-        setTimeout(() => { msgBox.className = 'message'; }, 3000);
+        resBox.style.display = 'none';
       }
     }
 
-    document.getElementById('btnMakeAdmin').onclick = () => adminAction('make_admin', 'Пользователь стал админом!');
-    document.getElementById('btnRemoveAdmin').onclick = () => adminAction('remove_admin', 'Права админа забраны.');
-    document.getElementById('btnVerifyUser').onclick = () => adminAction('verify_user', 'Галочка выдана!');
+    // --- СОЗДАНИЕ ИЛИ ОТКРЫТИЕ ЧАТА ---
+    async function startChat(targetUserId, targetUsername) {
+      document.getElementById('searchResults').style.display = 'none';
+      document.getElementById('searchUser').value = '';
 
-    // ПРОВЕРКА СЕССИИ ПРИ ЗАГРУЗКЕ
+      // Ищем, есть ли уже чат с этим пользователем
+      const { data: myChats } = await db.from('chat_members').select('chat_id').eq('user_id', currentUser.id);
+      let existingChatId = null;
+      
+      if (myChats) {
+        for (let mc of myChats) {
+          const { data: otherMember } = await db.from('chat_members').select('user_id').eq('chat_id', mc.chat_id).eq('user_id', targetUserId).maybeSingle();
+          if (otherMember) { existingChatId = mc.chat_id; break; }
+        }
+      }
+
+      if (existingChatId) {
+        openChat(existingChatId, targetUsername);
+      } else {
+        // Создаем новый чат
+        const { data: newChat } = await db.from('chats').insert({ is_group: false }).select().single();
+        await db.from('chat_members').insert([
+          { chat_id: newChat.id, user_id: currentUser.id },
+          { chat_id: newChat.id, user_id: targetUserId }
+        ]);
+        openChat(newChat.id, targetUsername);
+        loadChats();
+      }
+    }
+
+    // --- СПИСОК ЧАТОВ ---
+    async function loadChats() {
+      const { data: memberships } = await db.from('chat_members').select('chat_id').eq('user_id', currentUser.id);
+      const listBox = document.getElementById('chatList');
+      listBox.innerHTML = '';
+      
+      if (!memberships || memberships.length === 0) {
+        listBox.innerHTML = '<div style="padding: 20px; color: var(--muted); text-align: center;">Нет чатов. Найдите друга!</div>';
+        return;
+      }
+
+      for (let m of memberships) {
+        const { data: otherMembers } = await db.from('chat_members').select('user_id').eq('chat_id', m.chat_id).neq('user_id', currentUser.id);
+        
+        let chatName = 'Чат';
+        if (otherMembers && otherMembers.length > 0) {
+          const { data: otherProfile } = await db.from('profiles').select('username').eq('id', otherMembers[0].user_id).single();
+          if (otherProfile) chatName = otherProfile.username;
+        }
+
+        const { data: lastMsg } = await db.from('messages').select('content').eq('chat_id', m.chat_id).order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+        listBox.innerHTML += `
+          <div class="chat-item" id="chat-${m.chat_id}" onclick="openChat('${m.chat_id}', '${chatName}')">
+            <div class="chat-avatar">${chatName[0].toUpperCase()}</div>
+            <div class="chat-info">
+              <div class="chat-name">${chatName}</div>
+              <div class="chat-last-msg">${lastMsg ? lastMsg.content : 'Нет сообщений'}</div>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // --- ОТКРЫТИЕ ЧАТА ---
+    async function openChat(chatId, chatName) {
+      activeChatId = chatId;
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('activeChatArea').style.display = 'flex';
+      document.getElementById('headerName').textContent = chatName;
+      document.getElementById('headerAvatar').textContent = chatName[0].toUpperCase();
+      
+      document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById('chat-' + chatId);
+      if (activeEl) activeEl.classList.add('active');
+
+      // На мобилках скрываем сайдбар
+      if (window.innerWidth <= 768) document.getElementById('sidebar').classList.add('hidden');
+
+      loadMessages(chatId);
+    }
+
+    // --- ЗАГРУЗКА СООБЩЕНИЙ ---
+    async function loadMessages(chatId) {
+      const { data: msgs } = await db.from('messages').select('*').eq('chat_id', chatId).order('created_at', { ascending: true });
+      const area = document.getElementById('messagesArea');
+      area.innerHTML = '';
+      
+      if (msgs) {
+        msgs.forEach(msg => {
+          const isOut = msg.sender_id === currentUser.id;
+          const time = new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          area.innerHTML += `
+            <div class="msg-bubble ${isOut ? 'msg-out' : 'msg-in'}">
+              ${msg.content}
+              <span class="msg-time">${time}</span>
+            </div>
+          `;
+        });
+        area.scrollTop = area.scrollHeight;
+      }
+    }
+
+    // --- ОТПРАВКА ---
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text || !activeChatId) return;
+
+      input.value = '';
+      await db.from('messages').insert({
+        chat_id: activeChatId,
+        sender_id: currentUser.id,
+        content: text
+      });
+    }
+
+    // --- REALTIME (МГНОВЕННЫЕ СООБЩЕНИЯ) ---
+    function setupRealtime() {
+      db.channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+          const newMsg = payload.new;
+          if (newMsg.chat_id === activeChatId) {
+            const isOut = newMsg.sender_id === currentUser.id;
+            const time = new Date(newMsg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const area = document.getElementById('messagesArea');
+            area.innerHTML += `
+              <div class="msg-bubble ${isOut ? 'msg-out' : 'msg-in'}">
+                ${newMsg.content}
+                <span class="msg-time">${time}</span>
+              </div>
+            `;
+            area.scrollTop = area.scrollHeight;
+          }
+          loadChats(); // Обновляем последнее сообщение в списке
+        })
+        .subscribe();
+    }
+
+    // --- МОБИЛЬНАЯ ВЕРСТКА ---
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar').classList.remove('hidden');
+      document.getElementById('activeChatArea').style.display = 'none';
+      document.getElementById('emptyState').style.display = 'flex';
+      activeChatId = null;
+    }
+
+    // --- ПРОВЕРКА СЕССИИ ПРИ ЗАГРУЗКЕ ---
     (async () => {
       const { data: { session } } = await db.auth.getSession();
-      if (session) loadProfileAndShow(session.user.id);
+      if (session) initMessenger();
     })();
   </script>
 </body>
